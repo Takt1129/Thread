@@ -43,4 +43,6 @@ int main() {
     std::cout << sum1 + sum2 + sum3 << std::endl;
     getchar();
     //std::this_thread::sleep_for(std::chrono::seconds(5));
+    //git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe -i C:/Users/wcm/.ssh/id_rsa"
+
 }
