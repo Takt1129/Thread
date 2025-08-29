@@ -78,7 +78,6 @@ private:
         Derived(T data) : data_(data) {}
         T data_;
     };
-private:
     std::unique_ptr<Base> base_;
 };
 class Task;
@@ -164,18 +163,18 @@ private:
     void threadFunc(int threadid);
     bool checkRunningState() const;
 private:
-    //std::vector<std::unique_ptr<Thread>> threads_;//线程列表
-    std::unordered_map<int,std::unique_ptr<Thread>> threads_;
+    //std::vector<std::unique_ptr<Thread>> threads_;
+    std::unordered_map<int,std::unique_ptr<Thread>> threads_;//线程列表
     size_t initThreadSize_;//初始线程数量
     size_t maxThreadSize_;//线程最大数目
-
     std::atomic_int idleThreadsize_;//空闲线程数目
     std::atomic_int curThreadSize_;//目前线程数目
+    std::condition_variable exitCond_;//等待线程资源全部回收
 
     std::queue<std::shared_ptr<Task>> taskQue_;//用户可能传入的对象生命周期较短,裸指针会有问题,因此选用智能指针
     std::atomic_int taskSize_;//任务的数目
     int taskQueMaxThreshHold_;//任务队列上限阈值
-    int threadSizeThreshhold_;//线程数目的上限阈值
+    int threadSizeThreshHold_;//线程数目的上限阈值
     std::mutex taskQuemutex_;//锁,保证任务队列的线程安全
     std::condition_variable notFull;//队列不满
     std::condition_variable notEmpty;//队列不空
