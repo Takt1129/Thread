@@ -5,4 +5,5 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 add_executable(ThreadPool
-        threadpool.cpp test.cpp)
+        threadpool.cpp test.cpp
+)

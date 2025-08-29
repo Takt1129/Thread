@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <unordered_map>
 #include <iostream>
 class Semaphore {
 public:
@@ -121,48 +122,66 @@ class Thread
 {
 public:
     //线程函数对象类型
-    using ThreadFunc = std::function<void()>;
+    using ThreadFunc = std::function<void(int)>;
     //线程构造
     Thread(ThreadFunc func);
     //线程析构
     ~Thread();
     //启动线程
     void start();
+    int getId_() const;
 private:
     ThreadFunc func_;
+    static int generatedId_;
+    int threadId_;//保存线程ID
 };
 class ThreadPool
 {
     //需要一个容器存放线程
 public:
     ThreadPool();
+
     ~ThreadPool();
 
     void start(int initThreadSize = 4);//开启线程池
+
+    //设置线程池cached模式下线程阈值
+    void setThreadSizeThreshHold(int threadNum);
+
     void setMode(PoolMode mode);//设置模式
+
     //设置任务队列上限度的阈值
     void setTaskQueMaxThreshHole(int threshhold);
+
     Result submitTask(std::shared_ptr<Task> sp);//为线程池提交任务
+
     //禁止拷贝
     ThreadPool(const ThreadPool&) = delete;
+
     ThreadPool& operator=(const ThreadPool&) = delete;
 private:
     //定义线程函数
-    void threadFunc();
+    void threadFunc(int threadid);
+    bool checkRunningState() const;
 private:
-    std::vector<std::unique_ptr<Thread>> threads_;//线程列表
+    //std::vector<std::unique_ptr<Thread>> threads_;//线程列表
+    std::unordered_map<int,std::unique_ptr<Thread>> threads_;
     size_t initThreadSize_;//初始线程数量
     size_t maxThreadSize_;//线程最大数目
+
+    std::atomic_int idleThreadsize_;//空闲线程数目
+    std::atomic_int curThreadSize_;//目前线程数目
 
     std::queue<std::shared_ptr<Task>> taskQue_;//用户可能传入的对象生命周期较短,裸指针会有问题,因此选用智能指针
     std::atomic_int taskSize_;//任务的数目
     int taskQueMaxThreshHold_;//任务队列上限阈值
-
+    int threadSizeThreshhold_;//线程数目的上限阈值
     std::mutex taskQuemutex_;//锁,保证任务队列的线程安全
     std::condition_variable notFull;//队列不满
     std::condition_variable notEmpty;//队列不空
 
     PoolMode poolMode_;//当前线程池的工作模式
+    std::atomic_bool isPoolRunning_; //表示线程池是否启动
 };
 
 
