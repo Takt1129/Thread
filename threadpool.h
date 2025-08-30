@@ -31,6 +31,8 @@ public:
     void post() {
         std::unique_lock<std::mutex> lock(mtx_);
         resLimit_++;
+        //linux下condition_variable的析构函数什么也没做
+        //导致这里状态已经失效，无故阻塞
         cond_.notify_all();
     }
 private:
@@ -142,7 +144,7 @@ public:
 
     ~ThreadPool();
 
-    void start(int initThreadSize = 4);//开启线程池
+    void start(int initThreadSize = std::thread::hardware_concurrency());//开启线程池
 
     //设置线程池cached模式下线程阈值
     void setThreadSizeThreshHold(int threadNum);
